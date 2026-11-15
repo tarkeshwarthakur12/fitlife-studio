@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Article Detail | FitLife Studio</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/navbar-footer.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <style>
+    .quote-box {
+      background: var(--color-forest-green);
+      color: var(--color-clean-white);
+      padding: 30px;
+      border-radius: 8px;
+      border-left: 6px solid var(--color-neon-blue);
+      margin: 30px 0;
+    }
+    .quote-text {
+      font-size: 1.3rem;
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+    .quote-author {
+      font-weight: 700;
+      color: var(--color-neon-blue);
+      text-align: right;
+    }
+    .like-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin: 30px 0;
+      padding: 20px 0;
+      border-top: 1px solid #e5e7eb;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .comments-section {
+      margin-top: 40px;
+    }
+    .comment-card {
+      background: var(--color-light-gray);
+      padding: 16px 20px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: var(--color-forest-green);
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <section style="padding: 60px 0 80px;">
+    <div class="container" style="max-width: 800px;">
+      <div id="blog-detail-content"></div>
+    </div>
+  </section>
+
+  <div id="footer-container"></div>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    let currentBlogId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get('slug');
+      const container = document.getElementById('blog-detail-content');
+
+      if (!slug) {
+        container.innerHTML = '<h2>Article not found.</h2>';
+        return;
+      }
+
+      const blog = await api.getBlogBySlug(slug);
+      if (!blog) {
+        container.innerHTML = '<h2>Article not found or removed.</h2>';
+        return;
+      }
+
+      currentBlogId = blog._id;
+      document.title = `${blog.title} | FitLife Studio`;
+
+      let quoteHTML = '';
+      if (blog.quoteText) {
+        quoteHTML = `
+          <div class="quote-box">
+            <div class="quote-text">"${blog.quoteText}"</div>
+            <div class="quote-author">— ${blog.quoteAuthor || 'Tarakeshwar Thakur'}</div>
+          </div>
+        `;
+      }
+
+      const commentsListHTML = blog.comments && blog.comments.length > 0
+        ? blog.comments.map(c => `
+            <div class="comment-card">
+              <div class="comment-header">
+                <span>${c.name}</span>
+                <small style="color:#6b7280;">${new Date(c.createdAt).toLocaleDateString()}</small>
+              </div>
+              <p style="color:#374151;">${c.comment}</p>
+            </div>
+          `).join('')
+        : '<p style="color:#6b7280; font-style:italic;">No comments yet. Be the first to share your thoughts!</p>';
+
+      container.innerHTML = `
+        <span class="card-badge" style="margin-bottom: 16px;">${blog.category}</span>
+        <h1 style="font-size: 2.5rem; color: var(--color-forest-green); margin-bottom: 20px; line-height: 1.2;">${blog.title}</h1>
+        <p style="color: #6b7280; margin-bottom: 30px;">Published on ${new Date(blog.createdAt).toLocaleDateString()}</p>
+        <img src="${blog.featuredImage}" alt="${blog.title}" style="width: 100%; height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 30px;">
+        
+        ${quoteHTML}
+
+        <div style="font-size: 1.1rem; color: #374151; line-height: 1.8; margin-bottom: 40px; white-space: pre-line;">
+          ${blog.content}
+        </div>
+
+        <!-- Like Button Section -->
+        <div class="like-section">
+          <button id="like-btn" onclick="handleLike()" class="btn-primary" style="display:flex; align-items:center; gap:8px;">
+            ❤️ Like Post
+          </button>
+          <span style="font-weight:600; font-size:1.1rem;"><span id="likes-count">${blog.likes || 0}</span> Likes</span>
+        </div>
+
+        <!-- Comments Section -->
+        <div class="comments-section">
+          <h3 style="color: var(--color-forest-green); margin-bottom: 20px;">Community Discussion</h3>
+          
+          <!-- Comment Form -->
+          <form id="comment-form" onsubmit="handleComment(event)" style="background:var(--color-light-gray); padding:20px; border-radius:8px; margin-bottom:30px;">
+            <div class="form-group" style="margin-bottom:12px;">
+              <input type="text" id="comment-name" class="form-control" placeholder="Your Name" required>
+            </div>
+            <div class="form-group" style="margin-bottom:12px;">
+              <textarea id="comment-text" class="form-control" rows="3" placeholder="Share your feedback or question..." required></textarea>
+            </div>
+            <button type="submit" class="btn-secondary" style="padding:8px 20px;">Post Comment</button>
+          </form>
+
+          <!-- Comments Feed -->
+          <div id="comments-container">
+            ${commentsListHTML}
+          </div>
+        </div>
+      `;
+    });
+
+    async function handleLike() {
+      if (!currentBlogId) return;
+      const res = await api.likeBlog(currentBlogId);
+      if (res.success) {
+        document.getElementById('likes-count').innerText = res.likes;
+        const btn = document.getElementById('like-btn');
+        btn.disabled = true;
+        btn.innerText = '❤️ Liked!';
+        btn.style.opacity = '0.7';
+      }
+    }
+
+    async function handleComment(e) {
+      e.preventDefault();
+      if (!currentBlogId) return;
+
+      const name = document.getElementById('comment-name').value;
+      const comment = document.getElementById('comment-text').value;
+
+      const res = await api.addComment(currentBlogId, name, comment);
+      if (res.success) {
+        document.getElementById('comment-form').reset();
+        const container = document.getElementById('comments-container');
+        container.innerHTML = res.comments.map(c => `
+          <div class="comment-card">
+            <div class="comment-header">
+              <span>${c.name}</span>
+              <small style="color:#6b7280;">${new Date(c.createdAt).toLocaleDateString()}</small>
+            </div>
+            <p style="color:#374151;">${c.comment}</p>
+          </div>
+        `).join('');
+      }
+    }
+  </script>
+</body>
+</html>

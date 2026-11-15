@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness Videos | FitLife Studio</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/navbar-footer.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <section style="padding: 60px 0 20px;">
+    <div class="container">
+      <div class="section-header">
+        <h2>FitLife Studio Video Library</h2>
+        <p>Explore expert workouts, weight loss tips, and nutrition education</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding: 0 0 80px;">
+    <div class="container">
+      <div id="all-videos-grid" class="grid-container"></div>
+    </div>
+  </section>
+
+  <div id="footer-container"></div>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const videos = await api.getVideos();
+      const grid = document.getElementById('all-videos-grid');
+      if (grid && videos.length > 0) {
+        grid.innerHTML = videos.map(video => `
+          <div class="card-item">
+            <img src="${video.snippet.thumbnails.high.url}" alt="${video.snippet.title}" class="card-thumb">
+            <div class="card-body">
+              <span class="card-badge">YouTube</span>
+              <h3 class="card-title">${video.snippet.title}</h3>
+              <p class="card-text">${video.snippet.description}</p>
+              <a href="https://www.youtube.com/watch?v=${video.id.videoId || video.id}" target="_blank" class="btn-primary" style="padding: 8px 16px; font-size: 0.9rem;">Watch Video</a>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">No videos available at the moment.</p>';
+      }
+    });
+  </script>
+</body>
+</html>

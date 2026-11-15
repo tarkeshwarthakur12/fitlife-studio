@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perspectives & Insights | Tarakeshwar Thakur</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/navbar-footer.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <style>
+    .blog-filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+    .filter-btn {
+      background: white;
+      border: 1px solid #cbd5e1;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: #173B32;
+      color: white;
+      border-color: #173B32;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <!-- Header Section -->
+  <section style="padding: 60px 0 30px;">
+    <div class="container">
+      <div class="section-header" style="text-align: center;">
+        <h2 style="font-size: 2.5rem; color: #173B32; margin-bottom: 10px;">Perspectives & Social Commentary</h2>
+        <p style="color: #64748b; font-size: 1.1rem; max-width: 700px; margin: 0 auto;">
+          Exploring civic responsibility, governance, women safety, child welfare, and societal growth — authored by Tarakeshwar Thakur.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter & Articles Section -->
+  <section style="padding: 0 0 80px;">
+    <div class="container">
+      <!-- Category Filter Bar -->
+      <div class="blog-filters">
+        <button class="filter-btn active" onclick="filterArticles('all', this)">All Topics</button>
+        <button class="filter-btn" onclick="filterArticles('Society & Culture', this)">Society & Culture</button>
+        <button class="filter-btn" onclick="filterArticles('Politics & Governance', this)">Politics & Governance</button>
+        <button class="filter-btn" onclick="filterArticles('Education & Youth', this)">Education & Youth</button>
+        <button class="filter-btn" onclick="filterArticles('Women Safety & Rights', this)">Women Safety & Rights</button>
+        <button class="filter-btn" onclick="filterArticles('Children & Family Welfare', this)">Children & Family</button>
+        <button class="filter-btn" onclick="filterArticles('Opinion & Editorials', this)">Editorials</button>
+      </div>
+
+      <!-- Grid Display -->
+      <div id="blogs-grid" class="grid-container"></div>
+    </div>
+  </section>
+
+  <div id="footer-container"></div>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    let allBlogs = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      allBlogs = await api.getBlogs();
+      renderBlogs(allBlogs);
+    });
+
+    function renderBlogs(blogsToRender) {
+      const grid = document.getElementById('blogs-grid');
+      if (!grid) return;
+
+      if (blogsToRender.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">No articles found for this category. Check back soon for new perspectives!</p>';
+      } else {
+        grid.innerHTML = blogsToRender.map(blog => `
+          <div class="card-item">
+            <img src="${blog.featuredImage}" alt="${blog.title}" class="card-thumb" style="width: 100%; height: 220px; object-fit: cover;">
+            <div class="card-body" style="padding: 20px;">
+              <span class="card-badge" style="background: rgba(65, 105, 255, 0.1); color: #4169FF; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">${blog.category}</span>
+              <h3 class="card-title" style="margin: 12px 0 8px; color: #173B32; font-size: 1.25rem;">${blog.title}</h3>
+              <p class="card-text" style="color: #64748b; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">${blog.description || ''}</p>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                <a href="blog-detail.html?slug=${blog.slug}" class="btn-primary" style="padding: 8px 18px; font-size: 0.88rem; text-decoration: none;">Read Article</a>
+                <span style="font-size: 0.85rem; color: #94a3b8;">❤️ ${blog.likes || 0}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function filterArticles(category, btnElement) {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      if (category === 'all') {
+        renderBlogs(allBlogs);
+      } else {
+        const filtered = allBlogs.filter(b => b.category === category);
+        renderBlogs(filtered);
+      }
+    }
+  </script>
+</body>
+</html>

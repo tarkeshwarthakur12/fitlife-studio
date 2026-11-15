@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | FitLife Studio</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-brand">
+        <h2>FITLIFE STUDIO</h2>
+        <p>ADMIN CONTROL PANEL</p>
+        <ul class="admin-nav">
+          <li><a href="#" class="active">📊 Manage Posts</a></li>
+          <li><a href="index.html" target="_blank">🌐 View Live Website</a></li>
+        </ul>
+      </div>
+      <div class="admin-footer-user">
+        <p>Logged in as: <strong>Admin</strong></p>
+        <a href="#" onclick="logout()" style="color: #ef4444; font-weight: 600; display: inline-block; margin-top: 8px; text-decoration: none;">🚪 Logout</a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-content">
+      <div class="admin-header">
+        <div>
+          <h1>Dashboard Overview</h1>
+          <p style="color: #64748b; margin-top: 4px;">Manage blogs, motivation quotes, and community engagement.</p>
+        </div>
+        <button onclick="openModal()" class="btn-primary" style="display: flex; align-items: center; gap: 8px;">
+          <span>+</span> Create New Post
+        </button>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-title">Total Published Posts</span>
+          <span class="stat-value" id="stat-posts">0</span>
+        </div>
+        <div class="stat-card" style="border-left-color: #10b981;">
+          <span class="stat-title">Total Community Likes</span>
+          <span class="stat-value" id="stat-likes">0</span>
+        </div>
+        <div class="stat-card" style="border-left-color: #f59e0b;">
+          <span class="stat-title">Total Comments</span>
+          <span class="stat-value" id="stat-comments">0</span>
+        </div>
+      </div>
+
+      <!-- Articles Table Card -->
+      <div class="table-card">
+        <div class="table-header-bar">
+          <h3>Published Articles & Quotes</h3>
+          <span id="posts-count" style="color: #64748b; font-size: 0.9rem; font-weight: 500;">0 posts</span>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Engagement</th>
+                <th>Date</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-blogs-list">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<div id="blog-modal" class="modal-overlay">
+  <div class="modal-card">
+    <h2 style="color: var(--color-forest-green); margin-bottom: 20px; font-size: 1.5rem;">Create New Post</h2>
+    <form id="create-blog-form">
+      
+      <div class="form-group">
+        <label>Post Format Type <span style="color:red;">*</span></label>
+        <select id="blog-type" class="form-control" onchange="toggleQuoteFields()" required>
+          <option value="standard">Standard Article & Paragraphs</option>
+          <option value="quote">Motivational Quote Post</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Post Title <span style="color:red;">*</span></label>
+        <input type="text" id="blog-title" class="form-control" placeholder="e.g. Morning Habits for a Healthy Lifestyle" required>
+      </div>
+
+      <div class="form-group">
+  <label>Category <span style="color:red;">*</span></label>
+  <select id="blog-category" class="form-control" required>
+    <option value="Society & Culture">Society & Culture</option>
+    <option value="Politics & Governance">Politics & Governance</option>
+    <option value="Education & Youth">Education & Youth</option>
+    <option value="Women Safety & Rights">Women Safety & Rights</option>
+    <option value="Children & Family Welfare">Children & Family Welfare</option>
+    <option value="Public Health & Well-being">Public Health & Well-being</option>
+    <option value="Opinion & Editorials">Opinion & Editorials</option>
+  </select>
+</div>
+
+      <div id="quote-fields" style="display:none;">
+        <div class="form-group">
+          <label>Motivational Quote Text</label>
+          <textarea id="quote-text" class="form-control" rows="2" placeholder="e.g. Your fitness is your journey..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Quote Author</label>
+          <input type="text" id="quote-author" class="form-control" value="Tarakeshwar Thakur">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Short Summary / Card Description <span style="color:#64748b; font-weight:normal;">(Optional)</span></label>
+        <textarea id="blog-desc" class="form-control" rows="2" placeholder="Brief intro..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Full Content / Paragraphs <span style="color:#64748b; font-weight:normal;">(Optional)</span></label>
+        <textarea id="blog-content" class="form-control" rows="4" placeholder="Write full article content..."></textarea>
+      </div>
+
+      <!-- Image Upload Section -->
+      <div class="form-group">
+        <label>Post Image (Choose one option)</label>
+        <input type="text" id="blog-image-url" class="form-control" placeholder="Paste Image URL (Unsplash/Cloudinary)" style="margin-bottom: 12px;">
+        
+        <div class="file-upload-wrapper">
+          <!-- Gallery Upload Row -->
+          <div class="file-upload-row">
+            <span class="file-upload-label">📁 Upload from Gallery:</span>
+            <div style="display:flex; align-items:center;">
+              <div class="custom-file-input">
+                <span class="custom-file-btn">Browse File</span>
+                <input type="file" id="blog-image-file" accept="image/*" onchange="updateFileName(this, 'gallery-file-name')">
+              </div>
+              <span id="gallery-file-name" class="file-name-display">No file chosen</span>
+            </div>
+          </div>
+
+          <!-- Camera Capture Row -->
+          <div class="file-upload-row">
+            <span class="file-upload-label">📸 Take Photo Now (Camera):</span>
+            <div style="display:flex; align-items:center;">
+              <div class="custom-file-input">
+                <span class="custom-file-btn" style="background-color: var(--color-neon-blue);">Open Camera</span>
+                <input type="file" id="blog-camera-file" accept="image/*" capture="environment" onchange="updateFileName(this, 'camera-file-name')">
+              </div>
+              <span id="camera-file-name" class="file-name-display">No file chosen</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+        <button type="button" onclick="closeModal()" class="btn-outline" style="color:#333; border-color:#cbd5e1; background:white; padding: 10px 20px; border-radius:8px; cursor:pointer;">Cancel</button>
+        <button type="submit" class="btn-primary" style="padding: 10px 24px; border-radius:8px; cursor:pointer;">Publish Post</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <script src="js/api.js"></script>
+  <script>
+    const token = localStorage.getItem('fitlife_token');
+    if (!token) {
+      window.location.href = 'admin-login.html';
+    }
+
+    function logout() {
+      localStorage.removeItem('fitlife_token');
+      window.location.href = 'admin-login.html';
+    }
+
+    function toggleQuoteFields() {
+      const type = document.getElementById('blog-type').value;
+      document.getElementById('quote-fields').style.display = type === 'quote' ? 'block' : 'none';
+    }
+
+    function updateFileName(input, displayId) {
+  const display = document.getElementById(displayId);
+  if (input.files && input.files[0]) {
+    display.textContent = input.files[0].name;
+    display.style.color = '#10b981'; // Green accent when file selected
+  } else {
+    display.textContent = 'No file chosen';
+    display.style.color = '#64748b';
+  }
+}
+
+    async function loadAdminBlogs() {
+      const blogs = await api.getBlogs(true);
+      const tbody = document.getElementById('admin-blogs-list');
+      
+      let totalLikes = 0;
+      let totalComments = 0;
+      blogs.forEach(b => {
+        totalLikes += (b.likes || 0);
+        totalComments += (b.comments ? b.comments.length : 0);
+      });
+
+      document.getElementById('stat-posts').innerText = blogs.length;
+      document.getElementById('stat-likes').innerText = totalLikes;
+      document.getElementById('stat-comments').innerText = totalComments;
+      document.getElementById('posts-count').innerText = `${blogs.length} posts`;
+
+      if (tbody) {
+        if (blogs.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 30px;">No posts found. Click "+ Create New Post" to add one!</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = blogs.map(blog => `
+          <tr>
+            <td><strong>${blog.title}</strong></td>
+            <td><span class="badge-category">${blog.category}</span></td>
+            <td><span class="badge-type">${blog.postType || 'standard'}</span></td>
+            <td>❤️ ${blog.likes || 0} &nbsp;|&nbsp; 💬 ${blog.comments ? blog.comments.length : 0}</td>
+            <td>${new Date(blog.createdAt).toLocaleDateString()}</td>
+            <td style="text-align: right;">
+              <button onclick="deleteBlog('${blog._id}')" class="btn-danger">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function openModal() { document.getElementById('blog-modal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('blog-modal').style.display = 'none'; }
+
+    document.getElementById('create-blog-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('title', document.getElementById('blog-title').value);
+      formData.append('category', document.getElementById('blog-category').value);
+      formData.append('postType', document.getElementById('blog-type').value);
+      formData.append('quoteText', document.getElementById('quote-text').value);
+      formData.append('quoteAuthor', document.getElementById('quote-author').value);
+      formData.append('description', document.getElementById('blog-desc').value);
+      formData.append('content', document.getElementById('blog-content').value);
+
+      // Handle image input priority: file upload, camera snap, or URL string
+      const fileInput = document.getElementById('blog-image-file');
+      const cameraInput = document.getElementById('blog-camera-file');
+      const urlInput = document.getElementById('blog-image-url').value;
+
+      if (fileInput.files[0]) {
+        formData.append('featuredImage', fileInput.files[0]);
+      } else if (cameraInput.files[0]) {
+        formData.append('featuredImage', cameraInput.files[0]);
+      } else if (urlInput) {
+        formData.append('featuredImage', urlInput);
+      } else {
+        // Default fitness placeholder if nothing is provided
+        formData.append('featuredImage', 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80');
+      }
+
+      const res = await api.createBlog(formData, token);
+      if (res.success) {
+        closeModal();
+        loadAdminBlogs();
+        document.getElementById('create-blog-form').reset();
+      } else {
+        alert('Error creating post: ' + res.message);
+      }
+    });
+
+    async function deleteBlog(id) {
+      if (confirm('Are you sure you want to delete this post?')) {
+        const res = await api.deleteBlog(id, token);
+        if (res.success) {
+          loadAdminBlogs();
+        } else {
+          alert('Error deleting post');
+        }
+      }
+    }
+
+    loadAdminBlogs();
+  </script>
+</body>
+</html>
